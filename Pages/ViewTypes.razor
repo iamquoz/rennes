@@ -1,0 +1,104 @@
+﻿@page "/types"
+
+<PageTitle>Типы рекламы</PageTitle>
+
+@using course.Data
+@using coursedb.Data.db
+@inherits OwningComponentBase<TypesService>
+
+@if (types == null)
+{
+	<p><em>Подождите, загрузка</em></p>
+}
+else
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Тип</th>
+				<th>Период оплаты (д)</th>
+				<th>Цена</th>
+				<th></th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var type in types)
+			{
+				<tr>
+					<td>@type.Typename</td>
+					<td>@type.Billedper</td>
+					<td>@type.Price</td>
+					<td><button class = "btn btn-secondary" @onclick = "(() => edit(type))">Изменить</button></td>
+				</tr>
+			}
+		</tbody>
+	</table>
+	<button class = "btn btn-primary" @onclick = "add">@(showInput ? "Скрыть " : "Показать ")ввод</button>
+}
+@if (showInput)
+{
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="basic-addon1">Название</span>
+		</div>
+		<input class = "form-control" type = "text" @bind = "type.Typename"/>
+	</div>
+
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="basic-addon1">Период оплаты (в днях)</span>
+		</div>
+		<input class = "form-control" type = "number" min = "0" @bind = "type.Billedper" />
+	</div>
+
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="basic-addon1">Цена</span>
+		</div>
+		<input class = "form-control" type = "number" min = "0" @bind = "type.Price" />
+	</div>
+
+	<button class = "btn btn-success" @onclick = "save">Сохранить</button>
+}
+
+@code {
+	Types type = new Types();
+	private List<Types>? types;
+	private bool showInput = true;
+
+	protected override async Task OnInitializedAsync()
+	{
+		types = await @Service.GetTypesAsync();
+	}
+
+	void add() {
+		type = new Types();
+		type.Typeid = 0;
+		showInput = !showInput;
+	}
+
+	async Task save()
+	{
+		if (type.Typeid == 0)
+		{
+			var newType = new Types();
+			newType.Typename = type.Typename;
+			newType.Billedper = Convert.ToInt16(type.Billedper);
+			newType.Price = Convert.ToInt32(type.Price);
+
+			var result = @Service.CreateType(newType);
+		}
+		else
+		{
+			var result = @Service.EditType(type);
+		}
+
+		await OnInitializedAsync();
+	}
+
+	async Task edit(Types _type)
+	{
+		type = _type;
+		showInput = true;
+	}
+}

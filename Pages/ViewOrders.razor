@@ -1,0 +1,51 @@
+﻿@page "/"
+
+<PageTitle>Заказы</PageTitle>
+
+@using course.Data
+@using coursedb.Data.db
+@inherits OwningComponentBase<OrdersService>
+
+@if (showInput)
+{
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<span class="input-group-text">Клиент</span>
+		</div>
+		<input class = "form-control" type = "text"/>
+	</div>
+
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<span class="input-group-text">Тип</span>
+		</div>
+		<input class = "form-control" type = "text"/>
+	</div>
+
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<span class="input-group-text">Начало</span>
+		</div>
+		<input class = "form-control" type = "date" @bind = "order.Startdate"/>
+	</div>
+
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<span class="input-group-text">Конец</span>
+		</div>
+		<input class = "form-control" type = "date" @bind = "order.Enddate"/>
+	</div>
+
+	<button class = "btn btn-success" @onclick = "save">Сохранить</button>
+}
+
+@code {
+	Orders order = new Orders();
+	private List<Orders>? orders;
+	private bool showInput = true;
+
+	async Task save()
+	{
+		
+	}
+}
