@@ -11,5 +11,15 @@ namespace coursedb.Data.db
         public byte[] Terms { get; set; }
 
         public virtual Orders Order { get; set; }
+
+        public Docs(int orderid)
+        {
+            Orderid = orderid;
+        }
+       
+        public Docs()
+        {
+
+        }
     }
 }

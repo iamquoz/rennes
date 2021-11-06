@@ -20,6 +20,16 @@ namespace course.Data
 			return await _context.Clients.ToListAsync();
 		}
 
+		public Task<Clients> CreateClient(string name)
+        {
+			Clients client = new();
+			client.Clientname = name;
+
+			_context.Clients.Add(client);
+			_context.SaveChanges();
+			return Task.FromResult(client);
+		}
+
 		public Task<Clients> CreateClient(Clients client)
 		{
 			_context.Clients.Add(client);
@@ -87,16 +97,52 @@ namespace course.Data
 			_context = context;
 		}
 
-		public async Task<List<Orders>> GetTypesAsync()
+		public async Task<List<Orders>> GetOrdersAsync()
 		{
-			return await _context.Orders.ToListAsync();
+			var a = await _context.Orders.ToListAsync();
+			foreach(var o in a)
+            {
+				o.Client = _context.Clients.Where(e => e.Clientid == o.Clientid).FirstOrDefault();
+				o.Type = _context.Types.Where(e => e.Typeid == o.Typeid).FirstOrDefault();
+				o.Docs = _context.Docs.Where(e => e.Orderid == o.Orderid).FirstOrDefault();
+            }
+			return a;
 		}
 
 		public Task<Orders> CreateOrder(Orders order)
         {
 			_context.Orders.Add(order);
 			_context.SaveChanges();
+			_context.Docs.Add(new Docs(order.Orderid));
+
 			return Task.FromResult(order);
+        }
+
+		public Task<bool> AddDocs(byte[] file, int orderid)
+		{
+			var editing = _context.Docs.Where(e => e.Orderid == orderid).FirstOrDefault();
+
+			if (editing != null)
+			{
+				editing.Terms = file;
+				_context.SaveChanges();
+				return Task.FromResult(true);
+			}
+			else
+				return Task.FromResult(false);
+		}
+
+		public Task<bool> SetEff(byte eff, int orderid)
+        {
+			var editing = _context.Orders.Where(e => e.Orderid == orderid).FirstOrDefault();
+			if (editing != null)
+			{
+				editing.Eff = eff;
+				_context.SaveChanges();
+				return Task.FromResult(true);
+			}
+			else
+				return Task.FromResult(false);
         }
 
 		public Task<bool> EditOrder(Orders order)
@@ -114,5 +160,6 @@ namespace course.Data
 			else
 				return Task.FromResult(false);
         }
+
 	}
 }

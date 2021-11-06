@@ -69,6 +69,8 @@ namespace coursedb.Data.db
 
                 entity.Property(e => e.Orderid).HasColumnName("orderid");
 
+                entity.Property(e => e.Amount).HasColumnName("amount");
+
                 entity.Property(e => e.Clientid).HasColumnName("clientid");
 
                 entity.Property(e => e.Eff).HasColumnName("eff");

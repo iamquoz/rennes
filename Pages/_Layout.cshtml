@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="~/" />
     <link rel="stylesheet" href="css/bootstrap/bootstrap.min.css" />
+    <link href="_content/Blazored.Typeahead/blazored-typeahead.css" rel="stylesheet" />
     <link href="css/site.css" rel="stylesheet" />
     <link href="course.styles.css" rel="stylesheet" />
     <component type="typeof(HeadOutlet)" render-mode="ServerPrerendered" />
@@ -28,5 +29,30 @@
     </div>
 
     <script src="_framework/blazor.server.js"></script>
+    <script src="_content/Blazored.Typeahead/blazored-typeahead.js"></script>
+    <script type="text/javascript">
+        function saveAsFile(filename, bytesBase64) {
+            if (navigator.msSaveBlob) {
+                //Download document in Edge browser
+                var data = window.atob(bytesBase64);
+                var bytes = new Uint8Array(data.length);
+                for (var i = 0; i < data.length; i++) {
+                    bytes[i] = data.charCodeAt(i);
+                }
+                var blob = new Blob([bytes.buffer], { type: "application/octet-stream" });
+                navigator.msSaveBlob(blob, filename);
+            }
+            else {
+                var link = document.createElement('a');
+                link.download = filename;
+                link.href = "data:application/octet-stream;base64," + bytesBase64;
+                document.body.appendChild(link); // Needed for Firefox
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+  </script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ho+j7jyWK8fNQe+A12Hb8AhRq26LrZ/JpcUGGOn+Y7RsweNrtN/tE3MoK7ZeZDyx" crossorigin="anonymous"></script>
 </body>
 </html>

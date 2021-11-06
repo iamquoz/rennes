@@ -6,6 +6,33 @@
 @using coursedb.Data.db
 @inherits OwningComponentBase<TypesService>
 
+<button class = "btn btn-primary" @onclick = "add">@(showInput ? "Скрыть " : "Показать ")ввод</button>
+@if (showInput)
+{
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="basic-addon1">Название</span>
+		</div>
+		<input class = "form-control" type = "text" @bind = "type.Typename"/>
+	</div>
+
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="basic-addon1">Период оплаты (в днях)</span>
+		</div>
+		<input class = "form-control" type = "number" min = "0" @bind = "type.Billedper" />
+	</div>
+
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<span class="input-group-text" id="basic-addon1">Цена</span>
+		</div>
+		<input class = "form-control" type = "number" min = "0" @bind = "type.Price" />
+	</div>
+
+	<button class = "btn btn-success" @onclick = "save">Сохранить</button>
+}
+
 @if (types == null)
 {
 	<p><em>Подождите, загрузка</em></p>
@@ -33,36 +60,10 @@ else
 			}
 		</tbody>
 	</table>
-	<button class = "btn btn-primary" @onclick = "add">@(showInput ? "Скрыть " : "Показать ")ввод</button>
-}
-@if (showInput)
-{
-	<div class = "input-group mb-3" style = "margin-top: 25px">
-		<div class="input-group-prepend">
-			<span class="input-group-text" id="basic-addon1">Название</span>
-		</div>
-		<input class = "form-control" type = "text" @bind = "type.Typename"/>
-	</div>
-
-	<div class = "input-group mb-3" style = "margin-top: 25px">
-		<div class="input-group-prepend">
-			<span class="input-group-text" id="basic-addon1">Период оплаты (в днях)</span>
-		</div>
-		<input class = "form-control" type = "number" min = "0" @bind = "type.Billedper" />
-	</div>
-
-	<div class = "input-group mb-3" style = "margin-top: 25px">
-		<div class="input-group-prepend">
-			<span class="input-group-text" id="basic-addon1">Цена</span>
-		</div>
-		<input class = "form-control" type = "number" min = "0" @bind = "type.Price" />
-	</div>
-
-	<button class = "btn btn-success" @onclick = "save">Сохранить</button>
 }
 
 @code {
-	Types type = new Types();
+	Types type = new();
 	private List<Types>? types;
 	private bool showInput = true;
 
@@ -96,7 +97,7 @@ else
 		await OnInitializedAsync();
 	}
 
-	async Task edit(Types _type)
+	void edit(Types _type)
 	{
 		type = _type;
 		showInput = true;

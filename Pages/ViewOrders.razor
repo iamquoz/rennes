@@ -4,48 +4,215 @@
 
 @using course.Data
 @using coursedb.Data.db
+@using Syncfusion.Pdf;
+@using Syncfusion.Pdf.Graphics;
+
 @inherits OwningComponentBase<OrdersService>
+@inject TypesService TSer
+@inject ClientsService CSer
+@inject IJSRuntime js
+@inject NavigationManager uri
 
-@if (showInput)
+<div class = "input-group mb-3" style = "margin-top: 25px">
+	<div class="input-group-prepend">
+		<span class="input-group-text" style = "height: 42px">Клиент</span>
+	</div>
+	<BlazoredTypeahead SearchMethod = "searchClients" @bind-Value = "_order.Client" EnableDropDown = "true" AddItemOnEmptyResultMethod = "AddClient">
+		<SelectedTemplate>@context!.Clientname</SelectedTemplate>
+		<ResultTemplate>@context.Clientname</ResultTemplate>
+		<NotFoundTemplate Context = "searchText">Добавить "@searchText" как нового клиента?</NotFoundTemplate>
+	</BlazoredTypeahead>
+</div>
+
+<div class = "input-group mb-3" style = "margin-top: 25px">
+	<div class="input-group-prepend">
+		<span class="input-group-text" style = "height: 42px">Тип</span>
+	</div>
+	<BlazoredTypeahead SearchMethod = "searchTypes" @bind-Value = "_order.Type" EnableDropDown = "true">
+		<SelectedTemplate>@context!.Typename | Период оплаты: @(context!.Billedper + " д") | Цена: @(context!.Price + " руб")</SelectedTemplate>
+		<ResultTemplate>@context!.Typename | Период оплаты: @(context!.Billedper + " д") | Цена: @(context!.Price + " руб")</ResultTemplate>
+	</BlazoredTypeahead>
+</div>
+
+<div class = "input-group mb-3" style = "margin-top: 25px">
+	<div class="input-group-prepend">
+		<span class="input-group-text">Количество</span>
+	</div>
+	<input class = "form-control" type = "number" @bind = "_order.Amount" min = "1"/>
+</div>
+
+<div class = "input-group mb-3" style = "margin-top: 25px">
+	<div class="input-group-prepend">
+		<span class="input-group-text">Начало</span>
+	</div>
+	<input class = "form-control" type = "date" @bind = "_order.Startdate"/>
+</div>
+
+<div class = "input-group mb-3" style = "margin-top: 25px">
+	<div class="input-group-prepend">
+		<span class="input-group-text">Конец</span>
+	</div>
+	<input class = "form-control" type = "date" @bind = "_order.Enddate"/>
+</div>
+
+@if (dateWarning.Length != 0)
 {
-	<div class = "input-group mb-3" style = "margin-top: 25px">
-		<div class="input-group-prepend">
-			<span class="input-group-text">Клиент</span>
-		</div>
-		<input class = "form-control" type = "text"/>
+	<div class = "alert alert-warning" role = "alert">
+		@dateWarning
 	</div>
+}
 
-	<div class = "input-group mb-3" style = "margin-top: 25px">
-		<div class="input-group-prepend">
-			<span class="input-group-text">Тип</span>
-		</div>
-		<input class = "form-control" type = "text"/>
-	</div>
+<button class = "btn btn-success" @onclick = "save">Сохранить</button>
 
-	<div class = "input-group mb-3" style = "margin-top: 25px">
-		<div class="input-group-prepend">
-			<span class="input-group-text">Начало</span>
-		</div>
-		<input class = "form-control" type = "date" @bind = "order.Startdate"/>
-	</div>
-
-	<div class = "input-group mb-3" style = "margin-top: 25px">
-		<div class="input-group-prepend">
-			<span class="input-group-text">Конец</span>
-		</div>
-		<input class = "form-control" type = "date" @bind = "order.Enddate"/>
-	</div>
-
-	<button class = "btn btn-success" @onclick = "save">Сохранить</button>
+@if (orders != null)
+{
+	//TODO: add search
+	<table class="table">
+		<thead>
+			<tr>
+				<th></th>
+				<th>Заказчик</th>
+				<th>Тип рекламы</th>
+				<th>Начало</th>
+				<th>Конец</th>
+				<th>Количество</th>
+				<th>Эффективность</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var order in orders)
+			{
+				<tr>
+					<td>
+						<div class = "dropdown">
+							<button class = "btn btn-secondary dropdown-toggle" type = "button" data-toggle = "dropdown">
+								Действия
+							</button>
+							<div class = "dropdown-menu">
+								<a class = "dropdown-item" @onclick = "(() => edit(order))">Установить эфф. рекламы</a>
+								<a class = "dropdown-item">Скачать чек/договор</a>
+								@if(order.Docs?.Terms != null) {<a class = "dropdown-item" @onclick = "(() => GetFile(order))">Скачать ТЗ</a>}
+								<div @onclick = "(() => currid = order.Orderid)"><InputFile OnChange = "@LoadFile"/></div>
+							</div>
+						</div>
+					</td>
+					<td>@order.Client.Clientname</td>
+					<td>@order.Type.Typename</td>
+					<td>@order.Startdate.ToLongDateString()</td>
+					<td>@order.Enddate.ToLongDateString()</td>
+					<td>@order.Amount</td>
+					<td>@order.Eff</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+	@currid
 }
 
 @code {
-	Orders order = new Orders();
+	Orders _order = new Orders();
+	int currid = 0;
 	private List<Orders>? orders;
-	private bool showInput = true;
+	private List<Clients>? clients;
+	private List<Types>? types;
 
-	async Task save()
+	private string dateWarning = "";
+
+	private async Task<IEnumerable<Clients>> searchClients(string searchText)
 	{
-		
+		if (clients == null)
+			return await Task.FromResult(Enumerable.Empty<Clients>());
+		return await Task.FromResult(clients.Where(e => e.Clientname.ToLower().Contains(searchText.ToLower())).ToList());
+	}
+
+	private async Task<IEnumerable<Types>> searchTypes(string searchText)
+	{
+		if (types == null)
+			return await Task.FromResult(Enumerable.Empty<Types>());
+		return await Task.FromResult(types.Where(e => e.Typename.ToLower().Contains(searchText.ToLower())).ToList());
+	}
+
+	void LoadNewOrders()
+	{
+		// hacky, idk why but OnInitializedAsync just kinda stopped worked
+		uri.NavigateTo(uri.Uri, forceLoad: true);
+	}
+
+	protected override async Task OnInitializedAsync()
+	{
+		types = await TSer.GetTypesAsync();
+		clients = await CSer.GetClientsAsync();
+		orders = await @Service.GetOrdersAsync();
+	}
+
+	Task<Clients> AddClient(string text) 
+	{
+		return CSer.CreateClient(text);
+	}
+
+	void save()
+	{
+		var newOrder = new Orders();
+
+		//swap 
+		if (_order.Startdate > _order.Enddate)
+			(_order.Enddate, _order.Startdate) = (_order.Startdate, _order.Enddate);
+
+		if ((_order.Enddate - _order.Startdate).Days % _order.Type.Billedper != 0)
+		{
+			dateWarning = String.Format(
+				"Реклама типа {0} имеет период оплаты в {1} дней, текущая разница между датами равна {2}, любой избыток считается как полный период оплаты. Полных циклов: {3}, избыток: {4}", 
+				_order.Type.Typename, 
+				_order.Type.Billedper, 
+				(_order.Enddate - _order.Startdate).Days, 
+				(_order.Enddate - _order.Startdate).Days / _order.Type.Billedper, 
+				(_order.Enddate - _order.Startdate).Days % _order.Type.Billedper
+			);
+			return;
+		}
+		else
+		{
+			dateWarning = "";
+		}
+		newOrder.Clientid = _order.Client.Clientid;
+		newOrder.Typeid = _order.Type.Typeid;
+		newOrder.Amount = _order.Amount;
+		newOrder.Startdate = _order.Startdate;
+		newOrder.Enddate = _order.Enddate;
+
+		var result = @Service.CreateOrder(newOrder);
+
+		LoadNewOrders();
+	}
+
+	async void edit(Orders order)
+	{
+		string prompt = await js.InvokeAsync<string>("prompt", "Введите эффективность этого типа рекламы, (0-100)");
+		byte v = 0;
+
+		if (Byte.TryParse(prompt, out v))
+		{
+			var result = @Service.SetEff(v, order.Orderid);
+		}
+
+		LoadNewOrders();
+	}
+
+	async void LoadFile(InputFileChangeEventArgs e)
+	{
+		Console.WriteLine("loadfile");
+		var file = e.File;
+		MemoryStream mem = new();
+		await e.File.OpenReadStream(25000000, new CancellationToken()).CopyToAsync(mem);
+		var result = @Service.AddDocs(mem.ToArray(), currid);
+
+		LoadNewOrders();
+	}
+
+
+	// https://www.syncfusion.com/kb/10358/how-to-create-a-pdf-file-in-blazor-using-c
+	void GetFile(Orders o)
+	{
+		js.InvokeAsync<object>("saveAsFile", String.Format("ТЗ - {0} - {1}.pdf", o.Client.Clientname, o.Type.Typename), Convert.ToBase64String(o.Docs.Terms));
 	}
 }

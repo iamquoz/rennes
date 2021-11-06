@@ -1,0 +1,17 @@
+﻿@page "/clients"
+
+<PageTitle>Клиенты</PageTitle>
+
+@using course.Data
+@using coursedb.Data.db
+@inherits OwningComponentBase<ClientsService>
+
+
+@code {
+	private List<Clients>? clients;
+
+	protected override async Task OnInitializedAsync()
+	{
+		clients = await @Service.GetClientsAsync();
+	}
+}
