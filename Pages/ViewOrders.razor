@@ -7,11 +7,12 @@
 @using Syncfusion.Pdf;
 @using Syncfusion.Pdf.Graphics;
 
-@inherits OwningComponentBase<OrdersService>
 @inject TypesService TSer
 @inject ClientsService CSer
 @inject IJSRuntime js
 @inject NavigationManager uri
+
+@inherits OwningComponentBase<OrdersService>
 
 <div class = "input-group mb-3" style = "margin-top: 25px">
 	<div class="input-group-prepend">
@@ -66,23 +67,44 @@
 
 @if (orders != null)
 {
-	//TODO: add search
+	<hr />
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<div class = "input-group-text">
+				<label class="form-check-label" for = "useTime">Фильтр по дате</label>
+				<input type = "checkbox" @bind = "useTime" id = "useTime" style = "margin-left: 5px" @bind:event = "oninput"/>
+			</div>
+		</div>
+		<input class = "form-control" type = "date" @bind = "filterDate"/>
+	</div>
+	<div class = "input-group mb-3" style = "margin-top: 25px">
+		<div class="input-group-prepend">
+			<span class="input-group-text" data-toggle = "tooltip" data-placement = "top" title = "Поиск по заказчику, типу рекламы или эффективности">Фильтр</span>
+		</div>
+		<input class = "form-control" type = "text" @bind = "filterString" @bind:event = "oninput"/>
+	</div>
 	<table class="table">
 		<thead>
 			<tr>
-				<th></th>
 				<th>Заказчик</th>
 				<th>Тип рекламы</th>
 				<th>Начало</th>
 				<th>Конец</th>
 				<th>Количество</th>
 				<th>Эффективность</th>
+				<th></th>
 			</tr>
 		</thead>
 		<tbody>
-			@foreach (var order in orders)
+			@foreach (var order in orders.Where(e => filter(e) && date(e)))
 			{
 				<tr>
+					<td>@order.Client.Clientname</td>
+					<td>@order.Type.Typename</td>
+					<td>@order.Startdate.ToShortDateString()</td>
+					<td>@order.Enddate.ToShortDateString()</td>
+					<td>@order.Amount</td>
+					<td>@order.Eff</td>
 					<td>
 						<div class = "dropdown">
 							<button class = "btn btn-secondary dropdown-toggle" type = "button" data-toggle = "dropdown">
@@ -92,31 +114,54 @@
 								<a class = "dropdown-item" @onclick = "(() => edit(order))">Установить эфф. рекламы</a>
 								<a class = "dropdown-item">Скачать чек/договор</a>
 								@if(order.Docs?.Terms != null) {<a class = "dropdown-item" @onclick = "(() => GetFile(order))">Скачать ТЗ</a>}
-								<div @onclick = "(() => currid = order.Orderid)"><InputFile OnChange = "@LoadFile"/></div>
+								<div class = "dropdown-divider"></div>
+								<div @onclick = "(() => currid = order.Orderid)">
+									<label for = "uploadFile" class = "dropdown-item">Загрузить ТЗ</label>
+									<InputFile class="form-control" OnChange = "@LoadFile" accept = ".pdf" style = "display: none" id = "uploadFile"/>
+								</div>
 							</div>
 						</div>
 					</td>
-					<td>@order.Client.Clientname</td>
-					<td>@order.Type.Typename</td>
-					<td>@order.Startdate.ToLongDateString()</td>
-					<td>@order.Enddate.ToLongDateString()</td>
-					<td>@order.Amount</td>
-					<td>@order.Eff</td>
 				</tr>
 			}
 		</tbody>
 	</table>
-	@currid
 }
 
 @code {
 	Orders _order = new Orders();
-	int currid = 0;
+	private int currid = 0;
 	private List<Orders>? orders;
 	private List<Clients>? clients;
 	private List<Types>? types;
 
 	private string dateWarning = "";
+	private string filterString = "";
+	private DateTime filterDate = DateTime.Today;
+	private bool useTime = true;
+
+	private bool filter(Orders order)
+	{
+		if (string.IsNullOrEmpty(filterString.Trim()))
+			return true;
+		if (order.Client.Clientname.Contains(filterString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		if (order.Type.Typename.Contains(filterString, StringComparison.OrdinalIgnoreCase))
+			return true;
+		if (order.Eff?.ToString().StartsWith(filterString) == true)
+			return true;
+
+		return false;
+	}
+
+	private bool date(Orders order)
+	{
+		if (!useTime)
+			return true;
+		if (useTime && order.Startdate <= filterDate && filterDate <= order.Enddate)
+				return true;
+		return false;
+	}
 
 	private async Task<IEnumerable<Clients>> searchClients(string searchText)
 	{
@@ -126,6 +171,13 @@
 	}
 
 	private async Task<IEnumerable<Types>> searchTypes(string searchText)
+	{
+		if (types == null)
+			return await Task.FromResult(Enumerable.Empty<Types>());
+		return await Task.FromResult(types.Where(e => e.Typename.ToLower().Contains(searchText.ToLower())).ToList());
+	}
+
+	private async Task<IEnumerable<Types>> searchEverything(string searchText)
 	{
 		if (types == null)
 			return await Task.FromResult(Enumerable.Empty<Types>());

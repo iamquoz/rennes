@@ -20,7 +20,6 @@ builder.Services.AddScoped<ClientsService>();
 builder.Services.AddDbContext<coursedb.Data.db.CoursedbContext>(options => 
 	options.
 		UseSqlServer(config.GetConnectionString("DefaultConnection"))
-		.EnableSensitiveDataLogging(true)
 );
 
 var app = builder.Build();
