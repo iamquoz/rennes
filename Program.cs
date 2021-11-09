@@ -1,7 +1,5 @@
 using course.Data;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Web;
 
 var config = new ConfigurationBuilder()
 	.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -17,7 +15,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddScoped<TypesService>();
 builder.Services.AddScoped<OrdersService>();
 builder.Services.AddScoped<ClientsService>();
-builder.Services.AddDbContext<coursedb.Data.db.CoursedbContext>(options => 
+builder.Services.AddDbContext<coursedb.Data.db.CoursedbContext>(options =>
 	options.
 		UseSqlServer(config.GetConnectionString("DefaultConnection"))
 );

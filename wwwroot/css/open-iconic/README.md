@@ -37,7 +37,7 @@ Adding an icon from an SVG sprite is a little different than what you're used to
 
 ```
 <svg class="icon">
-  <use xlink:href="open-iconic.svg#account-login" class="icon-account-login"></use>
+	<use xlink:href="open-iconic.svg#account-login" class="icon-account-login"></use>
 </svg>
 ```
 
@@ -45,8 +45,8 @@ Sizing icons only needs basic CSS. All the icons are in a square format, so just
 
 ```
 .icon {
-  width: 16px;
-  height: 16px;
+	width: 16px;
+	height: 16px;
 }
 ```
 
@@ -54,7 +54,7 @@ Coloring icons is even easier. All you need to do is set the `fill` rule on the 
 
 ```
 .icon-account-login {
-  fill: #f00;
+	fill: #f00;
 }
 ```
 

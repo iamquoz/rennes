@@ -5,19 +5,19 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace coursedb.Data.db
 {
-    public partial class Types
-    {
-        public Types()
-        {
-            Orders = new HashSet<Orders>();
-        }
+	public partial class Types
+	{
+		public Types()
+		{
+			Orders = new HashSet<Orders>();
+		}
 
-        public int Typeid { get; set; }
-        public string Typename { get; set; }
-        public short Billedper { get; set; }
-        public int Price { get; set; }
-        [NotMapped]
-        public double? AvgEff { get; set; }
-        public virtual ICollection<Orders> Orders { get; set; }
-    }
+		public int Typeid { get; set; }
+		public string Typename { get; set; }
+		public short Billedper { get; set; }
+		public int Price { get; set; }
+		[NotMapped]
+		public double? AvgEff { get; set; }
+		public virtual ICollection<Orders> Orders { get; set; }
+	}
 }

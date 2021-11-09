@@ -4,22 +4,22 @@ using System.Collections.Generic;
 
 namespace coursedb.Data.db
 {
-    public partial class Docs
-    {
-        public int Orderid { get; set; }
-        public Guid Rowguid { get; set; }
-        public byte[] Terms { get; set; }
+	public partial class Docs
+	{
+		public int Orderid { get; set; }
+		public Guid Rowguid { get; set; }
+		public byte[] Terms { get; set; }
 
-        public virtual Orders Order { get; set; }
+		public virtual Orders Order { get; set; }
 
-        public Docs(int orderid)
-        {
-            Orderid = orderid;
-        }
+		public Docs(int orderid)
+		{
+			Orderid = orderid;
+		}
        
-        public Docs()
-        {
+		public Docs()
+		{
 
-        }
-    }
+		}
+	}
 }
