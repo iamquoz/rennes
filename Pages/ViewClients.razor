@@ -6,6 +6,32 @@
 @using coursedb.Data.db
 @inherits OwningComponentBase<ClientsService>
 
+@if (clients == null)
+{
+	<p><em>Подождите, загрузка</em></p>
+}
+else
+{
+	<table class="table">
+		<thead>
+			<tr>
+				<th>Клиент</th>
+				<th>Количество заказов</th>
+				<th>Имеет активный заказ</th>
+			</tr>
+		</thead>
+		<tbody>
+			@foreach (var client in clients)
+			{
+				<tr>
+					<td>@client.Clientname</td>
+					<td>@client.OrderCount</td>
+					<td>@if (client.HasActive) {<Check />}</td>
+				</tr>
+			}
+		</tbody>
+	</table>
+}
 
 @code {
 	private List<Clients>? clients;

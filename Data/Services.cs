@@ -17,7 +17,14 @@ namespace course.Data
 
 		public async Task<List<Clients>> GetClientsAsync()
 		{
-			return await _context.Clients.ToListAsync();
+			var a = await _context.Clients.ToListAsync();
+			var today = DateTime.Today;
+			foreach (var client in a)
+            {
+				client.OrderCount = _context.Orders.Where(e => e.Clientid == client.Clientid).Count();
+				client.HasActive = _context.Orders.Where(e => e.Clientid == client.Clientid && e.Startdate <= today && today <= e.Enddate).Any();
+            }
+			return a;
 		}
 
 		public Task<Clients> CreateClient(string name)
@@ -62,7 +69,13 @@ namespace course.Data
 
 		public async Task<List<Types>> GetTypesAsync()
 		{
-			return await _context.Types.ToListAsync();
+			var a = await _context.Types.ToListAsync();
+            foreach (var t in a)
+            {
+				t.AvgEff = _context.Orders.Where(e => e.Typeid == t.Typeid && e.Eff != null).Average(e => e.Eff);
+            }
+			return a;
+
 		}
 
 		public Task<Types> CreateType(Types type)

@@ -45,6 +45,7 @@ else
 				<th>Тип</th>
 				<th>Период оплаты (д)</th>
 				<th>Цена</th>
+				<th>Средняя эффективность</th>
 				<th></th>
 			</tr>
 		</thead>
@@ -55,6 +56,7 @@ else
 					<td>@type.Typename</td>
 					<td>@type.Billedper</td>
 					<td>@type.Price</td>
+					<td>@(type.AvgEff.ToString() ?? "")</td>
 					<td><button class = "btn btn-secondary" @onclick = "(() => edit(type))">Изменить</button></td>
 				</tr>
 			}
