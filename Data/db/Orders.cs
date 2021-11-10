@@ -13,6 +13,8 @@ namespace coursedb.Data.db
 		public DateTime Enddate { get; set; }
 		public byte? Eff { get; set; }
 		public int Amount { get; set; }
+		public DateTime Signdate { get; set; }
+		public int? Total { get; set; }
 
 		public virtual Clients Client { get; set; }
 		public virtual Types Type { get; set; }

@@ -75,6 +75,8 @@ namespace coursedb.Data.db
 
 				entity.Property(e => e.Eff).HasColumnName("eff");
 
+				entity.Property(e => e.Total).HasColumnName("total");
+
 				entity.Property(e => e.Enddate)
 					.HasColumnType("datetime")
 					.HasColumnName("enddate");
@@ -82,6 +84,10 @@ namespace coursedb.Data.db
 				entity.Property(e => e.Startdate)
 					.HasColumnType("datetime")
 					.HasColumnName("startdate");
+
+				entity.Property(e => e.Signdate)
+					.HasColumnName("datetime")
+					.HasColumnName("signdate");
 
 				entity.Property(e => e.Typeid).HasColumnName("typeid");
 

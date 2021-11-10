@@ -112,7 +112,7 @@
 							</button>
 							<div class = "dropdown-menu">
 								<a class = "dropdown-item" @onclick = "(() => edit(order))">Установить эфф. рекламы</a>
-								<a class = "dropdown-item">Скачать чек/договор</a>
+								<a class = "dropdown-item" @onclick = "(() => Contract(order))">Скачать чек/договор</a>
 								@if(order.Docs?.Terms != null) {<a class = "dropdown-item" @onclick = "(() => GetFile(order))">Скачать ТЗ</a>}
 								<div class = "dropdown-divider"></div>
 								<div @onclick = "(() => currid = order.Orderid)">
@@ -159,7 +159,7 @@
 		if (!useTime)
 			return true;
 		if (useTime && order.Startdate <= filterDate && filterDate <= order.Enddate)
-				return true;
+			return true;
 		return false;
 	}
 
@@ -252,7 +252,6 @@
 
 	async void LoadFile(InputFileChangeEventArgs e)
 	{
-		Console.WriteLine("loadfile");
 		var file = e.File;
 		MemoryStream mem = new();
 		await e.File.OpenReadStream(25000000, new CancellationToken()).CopyToAsync(mem);
@@ -261,6 +260,60 @@
 		LoadNewOrders();
 	}
 
+	void Contract(Orders order) 
+	{
+		string path = System.IO.Directory.GetCurrentDirectory();
+		var filename = @"\template.dotx";
+
+		var word = new Microsoft.Office.Interop.Word.Application();
+		var doc = new Microsoft.Office.Interop.Word.Document();
+
+		doc = word.Documents.Add(path + filename);
+		doc.Activate();
+
+		/*
+		clientname
+		signdate
+		startdate
+		enddate
+		typename
+		amount
+		total
+		*/
+		foreach(Microsoft.Office.Interop.Word.FormField field in doc.FormFields)
+		{
+			switch(field.Name)
+			{
+				case "clientname":
+					field.Range.Text = order.Client.Clientname;
+					break;
+
+				case "type":
+					field.Range.Text = order.Type.Typename;
+					break;
+
+				case "signdate": 
+					field.Range.Text = order.Signdate.ToLongDateString();
+					break;
+				case "startdate":
+					field.Range.Text = order.Startdate.ToLongDateString();
+					break;
+				case "enddate":
+					field.Range.Text = order.Enddate.ToLongDateString();
+					break;
+
+				case "amount":
+					field.Range.Text = order.Amount.ToString();
+					break;
+				case "total":
+					field.Range.Text = order.Total.ToString();
+					break;
+			}
+		}
+
+		doc.Close();
+		word.Quit();
+	}
 
 	// https://www.syncfusion.com/kb/10358/how-to-create-a-pdf-file-in-blazor-using-c
 	void GetFile(Orders o)
